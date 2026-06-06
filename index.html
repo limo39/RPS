@@ -34,8 +34,55 @@
     .subtitle {
       font-size: 0.85rem;
       color: #8892b0;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       letter-spacing: 1px;
+    }
+
+    /* ── Set tracker ── */
+    .set-tracker {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .set-label {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892b0;
+    }
+
+    .set-pips {
+      display: flex;
+      gap: 5px;
+    }
+
+    .pip {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: transparent;
+      transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .pip.filled.player   { background: #64ffda; border-color: #64ffda; box-shadow: 0 0 6px rgba(100,255,218,0.5); }
+    .pip.filled.computer { background: #ff6b9d; border-color: #ff6b9d; box-shadow: 0 0 6px rgba(255,107,157,0.5); }
+
+    .set-score-display {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2b96f;
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .set-info {
+      font-size: 0.68rem;
+      color: #8892b0;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
     }
 
     /* ── Scoreboard ── */
@@ -48,6 +95,21 @@
       padding: 1rem 2.5rem;
       margin-bottom: 2.5rem;
       backdrop-filter: blur(8px);
+      position: relative;
+    }
+
+    .scoreboard-title {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892b0;
+      background: #16213e;
+      padding: 0 8px;
+      white-space: nowrap;
     }
 
     .score-item {
@@ -70,9 +132,9 @@
       line-height: 1;
     }
 
-    .score-value.player  { color: #64ffda; }
-    .score-value.ties    { color: #e2b96f; }
-    .score-value.computer{ color: #ff6b9d; }
+    .score-value.player   { color: #64ffda; }
+    .score-value.ties     { color: #e2b96f; }
+    .score-value.computer { color: #ff6b9d; }
 
     /* ── Arena ── */
     .arena {
@@ -151,16 +213,28 @@
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    .result-text.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
+    .result-text.show { opacity: 1; transform: translateY(0); }
     .result-text.win  { color: #64ffda; }
     .result-text.lose { color: #ff6b9d; }
     .result-text.tie  { color: #e2b96f; }
 
     /* ── Choice buttons ── */
+    .choices-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .choices-label {
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892b0;
+      margin-bottom: 0.5rem;
+    }
+
     .choices {
       display: flex;
       gap: 1rem;
@@ -188,14 +262,8 @@
       box-shadow: 0 8px 24px rgba(226,185,111,0.2);
     }
 
-    .choice-btn:active {
-      transform: translateY(0) scale(0.96);
-    }
-
-    .choice-btn:focus-visible {
-      outline: 2px solid #e2b96f;
-      outline-offset: 4px;
-    }
+    .choice-btn:active  { transform: translateY(0) scale(0.96); }
+    .choice-btn:focus-visible { outline: 2px solid #e2b96f; outline-offset: 4px; }
 
     .choice-btn .btn-label {
       position: absolute;
@@ -209,20 +277,11 @@
       white-space: nowrap;
     }
 
-    .choices-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .choices-label {
-      font-size: 0.7rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #8892b0;
-      margin-bottom: 0.5rem;
+    /* ── Disabled state during overlay ── */
+    .choice-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
     }
 
     /* ── Reset button ── */
@@ -246,25 +305,127 @@
       background: rgba(255,255,255,0.1);
     }
 
-    /* ── Pulse animation on new choice display ── */
+    /* ── Set-win overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 12, 30, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .overlay-card {
+      background: linear-gradient(145deg, #1e2a45, #152238);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 2.5rem 3rem;
+      text-align: center;
+      max-width: 340px;
+      width: 90%;
+      transform: scale(0.85);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+
+    .overlay.show .overlay-card { transform: scale(1); }
+
+    .overlay-trophy { font-size: 4rem; margin-bottom: 0.5rem; }
+
+    .overlay-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .overlay-title.player-wins  { color: #64ffda; }
+    .overlay-title.computer-wins{ color: #ff6b9d; }
+
+    .overlay-sub {
+      font-size: 0.85rem;
+      color: #8892b0;
+      margin-bottom: 1.6rem;
+      line-height: 1.5;
+    }
+
+    .overlay-sets {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #e2b96f;
+      margin-bottom: 1.8rem;
+    }
+
+    .next-set-btn {
+      padding: 0.7rem 2.2rem;
+      border-radius: 50px;
+      border: none;
+      background: linear-gradient(90deg, #64ffda, #0fa3b1);
+      color: #0d1b2a;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 4px 16px rgba(100,255,218,0.3);
+    }
+
+    .next-set-btn.cpu {
+      background: linear-gradient(90deg, #ff6b9d, #c0306a);
+      box-shadow: 0 4px 16px rgba(255,107,157,0.3);
+      color: #fff;
+    }
+
+    .next-set-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(100,255,218,0.4); }
+    .next-set-btn:active { transform: translateY(0); }
+
+    /* ── Pop animation ── */
     @keyframes pop {
       0%   { transform: scale(0.7); opacity: 0.4; }
       60%  { transform: scale(1.12); }
       100% { transform: scale(1);   opacity: 1; }
     }
 
-    .choice-display.animate {
-      animation: pop 0.35s ease forwards;
+    .choice-display.animate { animation: pop 0.35s ease forwards; }
+
+    /* ── Score flash when a point is scored ── */
+    @keyframes scoreFlash {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.35); }
+      100% { transform: scale(1); }
     }
+    .score-value.flash { animation: scoreFlash 0.35s ease; }
   </style>
 </head>
 <body>
 
   <h1>Rock · Paper · Scissors</h1>
-  <p class="subtitle">Best of all time — make your pick</p>
+  <p class="subtitle">First to 15 wins the set</p>
 
-  <!-- Scoreboard -->
-  <div class="scoreboard" role="region" aria-label="Scoreboard">
+  <!-- Set tracker -->
+  <div class="set-tracker" aria-label="Sets won">
+    <span class="set-label">You</span>
+    <div class="set-pips" id="player-pips"></div>
+    <span class="set-score-display" id="set-score">0 – 0</span>
+    <div class="set-pips" id="computer-pips"></div>
+    <span class="set-label">CPU</span>
+  </div>
+  <p class="set-info" id="set-info">Set 1 · First to 15 wins</p>
+
+  <!-- Round scoreboard -->
+  <div class="scoreboard" role="region" aria-label="Round scores">
+    <span class="scoreboard-title">Round Scores</span>
     <div class="score-item">
       <span class="score-label">You</span>
       <span class="score-value player" id="score-player">0</span>
@@ -279,15 +440,13 @@
     </div>
   </div>
 
-  <!-- Arena: player vs computer -->
+  <!-- Arena -->
   <div class="arena" aria-live="polite" aria-label="Round result">
     <div class="combatant">
       <span class="combatant-label">You</span>
       <div class="choice-display" id="player-display">❓</div>
     </div>
-
     <span class="vs">VS</span>
-
     <div class="combatant">
       <span class="combatant-label">CPU</span>
       <div class="choice-display" id="computer-display">❓</div>
@@ -315,18 +474,31 @@
     </div>
   </div>
 
-  <!-- Reset -->
-  <button class="reset-btn" id="reset-btn" aria-label="Reset scores">Reset Scores</button>
+  <!-- Reset everything -->
+  <button class="reset-btn" id="reset-btn" aria-label="Reset everything">Reset Everything</button>
+
+  <!-- Set-win overlay -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+    <div class="overlay-card">
+      <div class="overlay-trophy" id="overlay-trophy"></div>
+      <h2 class="overlay-title" id="overlay-title"></h2>
+      <p class="overlay-sub"  id="overlay-sub"></p>
+      <p class="overlay-sets" id="overlay-sets"></p>
+      <button class="next-set-btn" id="next-set-btn">Next Set →</button>
+    </div>
+  </div>
 
   <script>
-    // ── Game data ──────────────────────────────────────────────────
-    const CHOICES = ['rock', 'paper', 'scissors'];
-    const EMOJI   = { rock: '🪨', paper: '📄', scissors: '✂️' };
-
-    // wins[a] beats wins[a][b] → true means a beats b
+    // ── Constants ──────────────────────────────────────────────────
+    const WIN_TARGET = 15;
+    const CHOICES    = ['rock', 'paper', 'scissors'];
+    const EMOJI      = { rock: '🪨', paper: '📄', scissors: '✂️' };
     const WINS_AGAINST = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
 
-    const state = { player: 0, computer: 0, ties: 0 };
+    // ── State ──────────────────────────────────────────────────────
+    const round = { player: 0, computer: 0, ties: 0 };
+    const sets  = { player: 0, computer: 0, current: 1 };
+    let   locked = false; // prevent clicks while overlay is up
 
     // ── DOM refs ───────────────────────────────────────────────────
     const playerDisplay   = document.getElementById('player-display');
@@ -335,90 +507,208 @@
     const scorePlayer     = document.getElementById('score-player');
     const scoreComputer   = document.getElementById('score-computer');
     const scoreTies       = document.getElementById('score-ties');
+    const setScore        = document.getElementById('set-score');
+    const setInfo         = document.getElementById('set-info');
+    const playerPips      = document.getElementById('player-pips');
+    const computerPips    = document.getElementById('computer-pips');
+    const overlay         = document.getElementById('overlay');
+    const overlayTrophy   = document.getElementById('overlay-trophy');
+    const overlayTitle    = document.getElementById('overlay-title');
+    const overlaySub      = document.getElementById('overlay-sub');
+    const overlaySets     = document.getElementById('overlay-sets');
+    const nextSetBtn      = document.getElementById('next-set-btn');
+    const choiceBtns      = document.querySelectorAll('.choice-btn');
 
-    // ── Core logic ─────────────────────────────────────────────────
+    // ── Blended random ────────────────────────────────────────────
     function getComputerChoice() {
-      return CHOICES[Math.floor(Math.random() * CHOICES.length)];
+      const r   = Math.random();
+      const t   = (performance.now() % 1000) / 1000;
+      const ri  = Math.floor(r * 0xFFFFFF);
+      const ti  = Math.floor(t * 0xFFFFFF);
+      const mix = ((ri ^ ti) >>> 0) / 0xFFFFFF;
+      return CHOICES[Math.floor(mix * CHOICES.length)];
     }
 
+    // ── Game logic ────────────────────────────────────────────────
     function getResult(player, computer) {
-      if (player === computer)                  return 'tie';
-      if (WINS_AGAINST[player] === computer)    return 'win';
+      if (player === computer)               return 'tie';
+      if (WINS_AGAINST[player] === computer) return 'win';
       return 'lose';
     }
 
     function playRound(playerChoice) {
+      if (locked) return;
+
       const computerChoice = getComputerChoice();
       const result         = getResult(playerChoice, computerChoice);
 
-      // Update scores
-      if (result === 'win')  { state.player++;   }
-      if (result === 'lose') { state.computer++; }
-      if (result === 'tie')  { state.ties++;     }
+      if (result === 'win')  round.player++;
+      if (result === 'lose') round.computer++;
+      if (result === 'tie')  round.ties++;
 
-      // Render
-      updateDisplay(playerChoice, computerChoice, result);
-      updateScoreboard();
+      updateArena(playerChoice, computerChoice, result);
+      updateRoundScoreboard(result);
+
+      // Check for set winner
+      if (round.player >= WIN_TARGET) {
+        endSet('player');
+      } else if (round.computer >= WIN_TARGET) {
+        endSet('computer');
+      }
     }
 
-    // ── UI updates ─────────────────────────────────────────────────
+    function endSet(winner) {
+      locked = true;
+      choiceBtns.forEach(b => b.disabled = true);
+
+      sets[winner]++;
+
+      // Short delay so the player sees the winning point land first
+      setTimeout(() => showSetOverlay(winner), 600);
+    }
+
+    // ── Overlay ───────────────────────────────────────────────────
+    function showSetOverlay(winner) {
+      const isPlayer = winner === 'player';
+
+      overlayTrophy.textContent          = isPlayer ? '🏆' : '🤖';
+      overlayTitle.textContent           = isPlayer ? 'You Won the Set!' : 'CPU Won the Set!';
+      overlayTitle.className             = 'overlay-title ' + (isPlayer ? 'player-wins' : 'computer-wins');
+      overlaySub.textContent             = isPlayer
+        ? `You reached ${WIN_TARGET} wins first. Impressive!`
+        : `CPU reached ${WIN_TARGET} wins first. Better luck next set!`;
+      overlaySets.textContent            = `Sets  —  You ${sets.player}  ·  CPU ${sets.computer}`;
+      nextSetBtn.className               = 'next-set-btn' + (isPlayer ? '' : ' cpu');
+
+      updateSetTracker();
+      overlay.classList.add('show');
+      nextSetBtn.focus();
+    }
+
+    function closeOverlay() {
+      overlay.classList.remove('show');
+      startNewSet();
+    }
+
+    // ── Set / round resets ────────────────────────────────────────
+    function startNewSet() {
+      sets.current++;
+      round.player = 0; round.computer = 0; round.ties = 0;
+      locked = false;
+
+      choiceBtns.forEach(b => b.disabled = false);
+      updateRoundScoreboardFull();
+      updateSetInfo();
+      resetArena();
+    }
+
+    function resetEverything() {
+      overlay.classList.remove('show');
+      round.player = 0; round.computer = 0; round.ties = 0;
+      sets.player  = 0; sets.computer  = 0; sets.current = 1;
+      locked = false;
+
+      choiceBtns.forEach(b => b.disabled = false);
+      updateRoundScoreboardFull();
+      updateSetTracker();
+      updateSetInfo();
+      resetArena();
+    }
+
+    // ── UI updates ────────────────────────────────────────────────
     function animateDisplay(el, emoji, resultClass) {
       el.classList.remove('animate', 'win', 'lose', 'tie');
       el.textContent = emoji;
-      // Force reflow to restart animation
       void el.offsetWidth;
       el.classList.add('animate', resultClass);
     }
 
-    function updateDisplay(playerChoice, computerChoice, result) {
-      // Mirror result for computer display
-      const computerClass = result === 'win' ? 'lose' : result === 'lose' ? 'win' : 'tie';
-
+    function updateArena(playerChoice, computerChoice, result) {
+      const cpuClass = result === 'win' ? 'lose' : result === 'lose' ? 'win' : 'tie';
       animateDisplay(playerDisplay,   EMOJI[playerChoice],   result);
-      animateDisplay(computerDisplay, EMOJI[computerChoice], computerClass);
+      animateDisplay(computerDisplay, EMOJI[computerChoice], cpuClass);
 
-      // Result banner
-      const messages = {
-        win:  '🎉 You Win!',
-        lose: '💀 You Lose!',
-        tie:  '🤝 It\'s a Tie!',
-      };
-
+      const messages = { win: '🎉 You Win!', lose: '💀 You Lose!', tie: "🤝 It's a Tie!" };
       resultText.textContent = messages[result];
       resultText.className   = 'result-text ' + result;
-
-      // Trigger CSS transition (remove then re-add 'show')
       resultText.classList.remove('show');
       void resultText.offsetWidth;
       resultText.classList.add('show');
     }
 
-    function updateScoreboard() {
-      scorePlayer.textContent   = state.player;
-      scoreComputer.textContent = state.computer;
-      scoreTies.textContent     = state.ties;
+    function flashScore(el) {
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+      el.addEventListener('animationend', () => el.classList.remove('flash'), { once: true });
     }
 
-    // ── Event listeners ────────────────────────────────────────────
-    document.querySelectorAll('.choice-btn').forEach(btn => {
-      btn.addEventListener('click', () => playRound(btn.dataset.choice));
-    });
+    function updateRoundScoreboard(result) {
+      scorePlayer.textContent   = round.player;
+      scoreComputer.textContent = round.computer;
+      scoreTies.textContent     = round.ties;
+      if (result === 'win')  flashScore(scorePlayer);
+      if (result === 'lose') flashScore(scoreComputer);
+      if (result === 'tie')  flashScore(scoreTies);
+    }
 
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      state.player = 0; state.computer = 0; state.ties = 0;
-      updateScoreboard();
+    function updateRoundScoreboardFull() {
+      scorePlayer.textContent   = round.player;
+      scoreComputer.textContent = round.computer;
+      scoreTies.textContent     = round.ties;
+    }
 
-      // Reset arena
+    function updateSetTracker() {
+      setScore.textContent = `${sets.player} – ${sets.computer}`;
+
+      // Rebuild pips (up to 5 shown; overflow shows as number)
+      const MAX_PIPS = 5;
+      [
+        { el: playerPips,   count: sets.player,   cls: 'player'   },
+        { el: computerPips, count: sets.computer,  cls: 'computer' },
+      ].forEach(({ el, count, cls }) => {
+        el.innerHTML = '';
+        const show = Math.min(count, MAX_PIPS);
+        for (let i = 0; i < show; i++) {
+          const pip = document.createElement('span');
+          pip.className = `pip filled ${cls}`;
+          el.appendChild(pip);
+        }
+      });
+    }
+
+    function updateSetInfo() {
+      setInfo.textContent = `Set ${sets.current} · First to ${WIN_TARGET} wins`;
+    }
+
+    function resetArena() {
       ['win','lose','tie','animate'].forEach(c => {
         playerDisplay.classList.remove(c);
         computerDisplay.classList.remove(c);
       });
       playerDisplay.textContent   = '❓';
       computerDisplay.textContent = '❓';
-
       resultText.classList.remove('show');
       resultText.textContent = '';
+    }
+
+    // ── Event listeners ───────────────────────────────────────────
+    choiceBtns.forEach(btn => {
+      btn.addEventListener('click', () => playRound(btn.dataset.choice));
     });
+
+    nextSetBtn.addEventListener('click', closeOverlay);
+
+    document.getElementById('reset-btn').addEventListener('click', resetEverything);
+
+    // Close overlay with Escape key
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay();
+    });
+
+    // ── Init ──────────────────────────────────────────────────────
+    updateSetTracker();
+    updateSetInfo();
   </script>
 </body>
 </html>
